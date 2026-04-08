@@ -14,7 +14,7 @@ import {
   type JwtPayload 
 } from "@project/shared";
 import { ENV } from "../../../config/env.js";
-import { UnauthorizedError } from "../../../utils/app-errors.js";
+import { UnauthorizedError } from "src/utils/app-errors.js";
 
 export class InMemoryAuthService implements AuthService {
   /**
