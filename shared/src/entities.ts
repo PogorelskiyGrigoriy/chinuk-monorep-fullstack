@@ -118,3 +118,16 @@ export const PlaylistTrackSchema = z.object({
   trackId: z.number().int(),
 });
 export type PlaylistTrack = z.infer<typeof PlaylistTrackSchema>;
+
+/**
+ * Сводная информация о треке для таблиц "Details" (ТЗ 1.1, 1.2, 1.3)
+ * Объединяет данные из таблиц track, genre и media_type.
+ */
+export const TrackDetailSchema = z.object({
+  trackId: z.number().int(),
+  trackName: z.string(),
+  genreName: z.string().nullable(),
+  mediaTypeName: z.string().nullable(),
+});
+
+export type TrackDetail = z.infer<typeof TrackDetailSchema>;
