@@ -131,3 +131,14 @@ export const TrackDetailSchema = z.object({
 });
 
 export type TrackDetail = z.infer<typeof TrackDetailSchema>;
+
+// --- Album with Artist Name (DTO для ТЗ 1.2) ---
+/**
+ * Расширенная сущность альбома, включающая имя артиста.
+ * Используется для отображения списка альбомов в UI.
+ */
+export const AlbumWithArtistSchema = AlbumSchema.extend({
+  artistName: z.string().nullable(),
+});
+
+export type AlbumWithArtist = z.infer<typeof AlbumWithArtistSchema>;

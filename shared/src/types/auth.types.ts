@@ -3,8 +3,8 @@ import type { LoginData, AuthResponse, User } from "../schemas/auth.schema.js";
 export type UserWithPassword = User & { passwordHash: string };
 
 export interface UserService {
-  /** Поиск по числовому ID из Chinook */
-  getById(id: number): Promise<User>;
+  /** Возвращаем null, если не нашли, чтобы не падать */
+  getById(id: number): Promise<User | null>; 
   findByEmail(email: string): Promise<UserWithPassword | null>;
 }
 

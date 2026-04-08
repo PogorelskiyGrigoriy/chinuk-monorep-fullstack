@@ -4,7 +4,8 @@ import type {
   Employee, 
   Album, 
   Playlist, 
-  TrackDetail 
+  TrackDetail, 
+  AlbumWithArtist
 } from "@project/shared";
 
 /**
@@ -15,7 +16,7 @@ export interface CustomersService {
   getAll(): Promise<Customer[]>;
   
   /** Получить данные конкретного клиента */
-  getById(id: number): Promise<Customer>;
+  getById(id: number): Promise<Customer | null>;
 
   /** Получить все счета (invoices) конкретного клиента */
   getCustomerInvoices(customerId: number): Promise<Invoice[]>;
@@ -30,7 +31,7 @@ export interface CustomersService {
 export interface MusicService {
   // --- Альбомы ---
   /** Получить список всех альбомов (с именами артистов) */
-  getAlbums(): Promise<Album[]>;
+  getAlbums(): Promise<AlbumWithArtist[]>;
   
   /** Получить треки конкретного альбома */
   getAlbumTracks(albumId: number): Promise<TrackDetail[]>;

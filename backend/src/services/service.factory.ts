@@ -11,7 +11,7 @@ import {
   CustomersService, 
   MusicService, 
   AuthService 
-} from './interfaces.js';
+} from './entities.service.js';
 import { type AuditService } from './audit.service.js'; // Предположим, интерфейс аудита готов
 
 // Реализации (Knex / Supabase)

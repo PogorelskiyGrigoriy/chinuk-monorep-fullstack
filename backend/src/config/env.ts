@@ -1,33 +1,34 @@
 /**
  * @module EnvConfig
- * Environment variables validation and configuration for Chinook Explorer.
+ * Validated environment variables for the Chinook Backend.
  */
 import dotenv from "dotenv";
 import { z } from "zod";
-import logger from "src/utils/pino-logger.js";
+import logger from "../utils/pino-logger.js";
 
 dotenv.config();
 
 const envSchema = z.object({
+  // --- App ---
   NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
   PORT: z.coerce.number().default(3000),
-  
-  // JWT для авторизации (из твоего ТЗ 2.4)
+
+  // --- Auth & Security ---
   JWT_SECRET: z.string().min(8, "JWT_SECRET must be at least 8 characters"),
   JWT_EXPIRES_IN: z.string().default("2h"),
 
-  // Тип базы данных для основных данных (Chinook)
-  // Мы оставляем выбор, но по умолчанию теперь SUPABASE (Postgres)
+  // --- Service Logic ---
   DB_TYPE: z.enum(["SUPABASE", "IN_MEMORY"]).default("SUPABASE"),
-
-  // Тип для аудита (как ты и просил — in-memory)
   AUDIT_TYPE: z.enum(["IN_MEMORY", "DB"]).default("IN_MEMORY"),
 
-  // Строка подключения к Supabase (обязательна, если DB_TYPE = SUPABASE)
-  DATABASE_URL: z.string().url("DATABASE_URL must be a valid connection string"),
+  // --- Database (Object-based for Pooler/IPv4 compatibility) ---
+  DB_HOST: z.string().min(1, "DB_HOST is required"),
+  DB_USER: z.string().min(1, "DB_USER is required"),
+  DB_PASSWORD: z.string().min(1, "DB_PASSWORD is required"),
+  DB_NAME: z.string().default("postgres"),
+  DB_PORT: z.coerce.number().default(6543), // Defaulting to Supabase Pooler port
 });
 
-// Parse and validate process.env
 const _env = envSchema.safeParse(process.env);
 
 if (!_env.success) {
@@ -35,23 +36,18 @@ if (!_env.success) {
     variable: issue.path.join("."),
     message: issue.message,
   }));
-
   logger.fatal({ errors }, "❌ Invalid environment variables configuration");
   process.exit(1);
 }
 
-// Проверка безопасности для продакшена
+// Extra security check for production
 if (_env.data.NODE_ENV === "production" && 
     (_env.data.JWT_SECRET === "default_fallback_secret" || _env.data.JWT_SECRET === "CHANGE_ME")) {
-  logger.fatal(
-    { node_env: _env.data.NODE_ENV },
-    "❌ FATAL: JWT_SECRET must be a unique secure string in production!"
-  );
+  logger.fatal("❌ FATAL: Secure JWT_SECRET is required in production!");
   process.exit(1);
 }
 
 export const ENV = _env.data;
 
-// Типизация для фабрики сервисов
 export type DbType = z.infer<typeof envSchema>["DB_TYPE"];
 export type AuditType = z.infer<typeof envSchema>["AUDIT_TYPE"];

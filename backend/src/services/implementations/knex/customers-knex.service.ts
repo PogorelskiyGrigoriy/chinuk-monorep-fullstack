@@ -7,7 +7,7 @@ import {
   type Invoice, 
   type Employee 
 } from '@project/shared';
-import { CustomersService } from '../../interfaces.js';
+import { CustomersService } from '../../entities.service.js';
 import { NotFoundError } from '../../../utils/app-errors.js';
 
 export class CustomersKnexService implements CustomersService {
