@@ -1,55 +1,43 @@
 /**
- * @module MainLayout
- * Основной каркас приложения. Содержит навигацию и кнопку выхода.
+ * @module LayoutPage
+ * Основной каркас приложения.
+ * Содержит навигацию и область для динамического контента страниц.
  */
-import { Outlet, Link, useNavigate } from "react-router-dom";
+import { Box, Flex } from "@chakra-ui/react";
+import { Outlet } from "react-router-dom";
+import { Navbar } from "@/components/Navbar"; // Убедись, что регистр папки совпадает
 
-export const MainLayout = () => {
-  const navigate = useNavigate();
-  
-  // TODO: Получать реальную роль из AuthContext
-  const user = { role: 'SUPER_USER' }; 
-
-  const handleLogout = () => {
-    // ТЗ 2.4: Логика выхода (удаление токена, лог в аудит) и редирект на логин
-    console.log("Выход из системы...");
-    navigate("/login");
-  };
-
+export const LayoutPage = () => {
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* Шапка с навигацией */}
-      <nav className="bg-white shadow-sm px-6 py-4 flex justify-between items-center">
-        <div className="flex gap-6 items-center">
-          <h1 className="text-xl font-bold text-indigo-600">Chinook Explorer</h1>
-          
-          {/* ТЗ 2.5: Навигация на основе ролей */}
-          {(user.role === 'SALE' || user.role === 'SUPER_USER') && (
-            <Link to="/customers" className="text-gray-600 hover:text-indigo-500">Клиенты</Link>
-          )}
-          {(user.role === 'USER' || user.role === 'SUPER_USER') && (
-            <>
-              <Link to="/albums" className="text-gray-600 hover:text-indigo-500">Альбомы</Link>
-              <Link to="/playlists" className="text-gray-600 hover:text-indigo-500">Плейлисты</Link>
-            </>
-          )}
-          {user.role === 'SUPER_USER' && (
-            <Link to="/audit" className="text-red-500 font-medium">Логи аудита</Link>
-          )}
-        </div>
+    <Flex 
+      direction="column"
+      minH="100vh" 
+      bg="bg.canvas" // Глубокий Zinc 950 из нашей темы
+      color="fg.default"
+      transition="background-color 0.3s ease"
+    >
+      {/* Глобальная навигация (Шапка) */}
+      <Navbar />
 
-        <button 
-          onClick={handleLogout}
-          className="bg-gray-100 px-4 py-2 rounded-md hover:bg-gray-200 transition"
-        >
-          Выйти
-        </button>
-      </nav>
+      {/* Основная рабочая область:
+          Используем 'as="main"' для доступности (A11y).
+          flex="1" заставляет этот блок занимать всё свободное место.
+      */}
+      <Box 
+        as="main"
+        w="full"
+        flex="1"
+        display="flex"
+        flexDirection="column"
+        position="relative"
+      >
+        {/* Здесь будут рендериться наши страницы: Customers, Albums и т.д. */}
+        <Outlet />
+      </Box>
 
-      {/* Контент страницы */}
-      <main className="flex-1 p-8">
-        <Outlet /> {/* Здесь будут рендериться конкретные страницы */}
-      </main>
-    </div>
+      {/* Если в будущем понадобится футер, он встанет здесь */}
+    </Flex>
   );
 };
+
+export default MainLayout;

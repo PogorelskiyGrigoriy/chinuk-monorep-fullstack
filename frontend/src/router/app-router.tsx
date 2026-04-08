@@ -11,7 +11,7 @@ import { ROUTES } from "src/config/navigation";
 import { ProtectedRoute } from "src/components/ProtectedRoute";
 
 // Импорт страниц (используем наши заглушки)
-import { MainLayout } from "@/pages/MainLayout";
+import { LayoutPage } from "@/pages/LayoutPage";
 import { LoginPage } from "@/pages/LoginPage";
 import { CustomersPage } from "@/pages/CustomersPage";
 import { AlbumsPage } from "@/pages/AlbumsPage";
@@ -35,7 +35,7 @@ export const appRouter = createBrowserRouter([
         path: "/",
         element: (
           <ProtectedRoute>
-            <MainLayout />
+            <LayoutPage />
           </ProtectedRoute>
         ),
         children: [
