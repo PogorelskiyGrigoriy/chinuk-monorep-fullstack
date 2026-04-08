@@ -2,7 +2,6 @@
  * @module ServiceFactory
  * Centralized initialization and dependency injection for all application services.
  */
-import { ENV } from '../config/env.js';
 import { 
   type AuthService, 
   type AuditService, 
@@ -15,6 +14,7 @@ import { InMemoryAuditService } from './implementations/in-memory/audit-in-memor
 import { InMemoryUserService } from './implementations/in-memory/user-in-memory.service.js';
 import { InMemoryAuthService } from './implementations/in-memory/auth-in-memory.service.js';
 import { CustomersKnexService } from './implementations/knex/customers-knex.service.js';
+import { MusicKnexService } from './implementations/knex/music-knex.service.js';
 
 /**
  * Класс-контейнер для всех сервисов системы.
@@ -24,7 +24,7 @@ class ServiceFactory {
   public readonly user: UserService;
   public readonly auth: AuthService;
   public readonly customers: CustomersService;
-  // public readonly music: MusicService; // Добавим, когда напишем реализацию
+  public readonly music: MusicService;
 
   constructor() {
     // 1. Инициализируем базовые сервисы
@@ -34,12 +34,9 @@ class ServiceFactory {
     // 2. Инъекция зависимостей: AuthService нужен UserService для проверки паролей
     this.auth = new InMemoryAuthService(this.user);
 
-    // 3. Выбор реализации для работы с данными Chinook
-    // Даже если в ENV стоит выбор, сейчас у нас готова только Knex версия
+    // 3. Инициализируем сервисы данных (Knex)
     this.customers = new CustomersKnexService();
-    
-    // Здесь будет MusicService, когда мы его реализуем
-    // this.music = new MusicKnexService();
+    this.music = new MusicKnexService();
   }
 }
 

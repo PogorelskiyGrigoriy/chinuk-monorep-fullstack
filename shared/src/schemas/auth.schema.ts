@@ -30,6 +30,7 @@ export const loginSchema = z.object({
 export type LoginData = z.infer<typeof loginSchema>;
 
 export interface JwtPayload {
-  id: number;
+  employeeId: number;
+  email: string;
   role: UserRole;
 }
