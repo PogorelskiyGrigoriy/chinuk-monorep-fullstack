@@ -3,9 +3,7 @@ import { z } from "zod";
 /**
  * Валидация Email (обязательна для логина и таблиц)
  */
-export const emailSchema = z.string()
-    .min(1, "Email is required")
-    .email("Invalid email address format");
+export const emailSchema = z.email("Invalid email address format");
 
 /**
  * Валидация пароля (минимум 6 символов для нашего Auth In-Memory)
