@@ -15,7 +15,7 @@ export const MOCK_USERS: UserWithPassword[] = [
     lastName: "Admin",
     role: "SUPER_USER",
     // Хеш для 'password123' (bcrypt)
-    passwordHash: "$2a$10$X86pZ3pY0E2yvA5Gz9W7u.tYnL5V4kG7u/C9iGfWz/YlS5PqY8e2O", 
+    passwordHash: "$2b$10$3bZbXhJx3gkQgfd887ac6uxvGv/jC5qaORmGFvvjN7yPAoEMi8UPe", 
   },
   {
     employeeId: 3, // Jane Peacock (Sales Support)
@@ -23,7 +23,7 @@ export const MOCK_USERS: UserWithPassword[] = [
     firstName: "Jane",
     lastName: "Sales",
     role: "SALE",
-    passwordHash: "$2a$10$X86pZ3pY0E2yvA5Gz9W7u.tYnL5V4kG7u/C9iGfWz/YlS5PqY8e2O",
+    passwordHash: "$2b$10$3bZbXhJx3gkQgfd887ac6uxvGv/jC5qaORmGFvvjN7yPAoEMi8UPe",
   },
   {
     employeeId: 999, // Виртуальный пользователь (не сотрудник)
@@ -31,6 +31,6 @@ export const MOCK_USERS: UserWithPassword[] = [
     firstName: "Music",
     lastName: "Lover",
     role: "USER",
-    passwordHash: "$2a$10$X86pZ3pY0E2yvA5Gz9W7u.tYnL5V4kG7u/C9iGfWz/YlS5PqY8e2O",
+    passwordHash: "$2b$10$3bZbXhJx3gkQgfd887ac6uxvGv/jC5qaORmGFvvjN7yPAoEMi8UPe",
   }
 ];
