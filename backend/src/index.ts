@@ -1,20 +1,30 @@
+/**
+ * @module EntryPoint
+ * Main application file. Initializes Express, global middlewares, 
+ * API routes, and starts the server.
+ */
 import express from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
+import { rateLimit } from 'express-rate-limit';
+
 import { ENV } from './config/env.js';
 import logger from './utils/pino-logger.js';
 import { errorMiddleware } from './middleware/error.middleware.js';
-import { rateLimit } from 'express-rate-limit';
 
-// Импорт роутов
+// Route imports
 import authRoutes from './routes/auth.routes.js';
 import auditRoutes from './routes/audit.routes.js';
 import customerRoutes from './routes/customer.routes.js';
 import musicRoutes from './routes/music.routes.js';
 
+/**
+ * Security: Rate limiting for authentication attempts.
+ * Limits brute-force risks on the login endpoint.
+ */
 const loginLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 минут
-  limit: 5, // Максимум 5 попыток логина
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  limit: 5,                 // 5 attempts max
   message: { message: 'Too many login attempts, please try again after 15 minutes' },
   standardHeaders: 'draft-7',
   legacyHeaders: false,
@@ -22,50 +32,45 @@ const loginLimiter = rateLimit({
 
 const app = express();
 
-// --- 1. Глобальные Middleware ---
+// --- 1. Global Middlewares ---
 
-// ТЗ 2.3.2: Morgan для логирования HTTP-запросов
-// Используем формат 'dev' для удобного чтения в консоли
+// HTTP request logging (Standard dev format)
 app.use(morgan('dev'));
 
-// Разрешаем кросс-доменные запросы для фронтенда
+// Cross-Origin Resource Sharing (enabled for Frontend access)
 app.use(cors());
 
-// Парсинг JSON в теле запроса
+// Body parsing: JSON support
 app.use(express.json());
 
-// Защита (Rate Limiting)
+// Apply rate limiting to security-sensitive routes
 app.use('/api/auth/login', loginLimiter);
 
-// --- 2. Подключение роутов (API) ---
+// --- 2. API Routes ---
 
 /**
- * Все пути будут начинаться с /api для чистоты архитектуры
+ * Domain-specific route mounting.
+ * All paths follow the /api prefix for architecture consistency.
  */
-app.use('/api/auth', authRoutes);     // Авторизация (/login, /me)
-app.use('/api/admin', auditRoutes);   // Админка и логи (/logs)
-app.use('/api/customers', customerRoutes); // Клиенты и инвойсы
+app.use('/api/auth', authRoutes);      // Auth & Session
+app.use('/api/admin', auditRoutes);    // Administration & Logs
+app.use('/api/customers', customerRoutes); // CRM & Invoices
+app.use('/api', musicRoutes);          // Music Catalog (internal prefixes applied)
+
+// --- 3. Error Handling ---
 
 /**
- * Музыкальные роуты (albums, playlists) подключаем к корню /api,
- * так как пути внутри music.routes.ts уже содержат свои префиксы.
- */
-app.use('/api', musicRoutes);
-
-// --- 3. Обработка ошибок ---
-
-/**
- * ВАЖНО: errorMiddleware должен быть самым последним,
- * чтобы ловить ошибки со всех роутов выше.
+ * Final defensive layer.
+ * MUST be registered after all routes to catch exceptions.
  */
 app.use(errorMiddleware);
 
-// --- 4. Запуск сервера ---
+// --- 4. Server Execution ---
 
-const PORT = ENV.PORT || 5000;
+const PORT = ENV.PORT || 3000;
 
 app.listen(PORT, () => {
-  // ТЗ 2.3.1: Используем Pino для системного лога
   logger.info(`🚀 Server is running at http://localhost:${PORT}`);
   logger.info(`🔐 Mode: ${ENV.NODE_ENV}`);
+  logger.info('📡 API Routes initialized');
 });

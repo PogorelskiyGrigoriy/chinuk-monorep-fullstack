@@ -1,3 +1,8 @@
+/**
+ * @module CustomersKnexService
+ * Database implementation for customer-related operations.
+ * Uses Knex.js to interact with the PostgreSQL Chinook database.
+ */
 import { db } from '../../../infrastructure/db.js';
 import { 
   CustomerSchema, 
@@ -14,8 +19,8 @@ import logger from '../../../utils/pino-logger.js';
 export class CustomersKnexService implements CustomersService {
   
   /**
-   * ТЗ 1.1: Получаем всех клиентов.
-   * Если данные в базе "грязные", мы логируем это, но не валим сервер.
+   * Retrieves all customers.
+   * Uses safeParse to prevent service failure on legacy data integrity issues.
    */
   async getAll(): Promise<Customer[]> {
     const rows = await db('customer').select('*');
@@ -24,9 +29,10 @@ export class CustomersKnexService implements CustomersService {
       const result = CustomerSchema.safeParse(row);
       
       if (!result.success) {
-        logger.warn({ customerId: row.customerId, errors: result.error.format() }, 'Data integrity issue');
-        // Возвращаем данные, но хотя бы через safeParse.data, если это возможно,
-        // либо очищенный объект.
+        logger.warn(
+          { customerId: row.customerId, errors: result.error.format() }, 
+          'Data integrity issue detected in customer record'
+        );
         return row as Customer; 
       }
       
@@ -34,30 +40,38 @@ export class CustomersKnexService implements CustomersService {
     });
   }
 
+  /**
+   * Retrieves a single customer by ID.
+   */
   async getById(id: number): Promise<Customer> {
     const row = await db('customer').where({ customerId: id }).first();
 
     if (!row) throw new NotFoundError(`Customer with ID ${id}`);
 
-    // Используем safeParse и здесь для консистентности
     const result = CustomerSchema.safeParse(row);
     if (!result.success) {
-      logger.error({ id, error: result.error.format() }, 'Customer data corrupted in DB');
+      logger.error({ id, error: result.error.format() }, 'Customer record validation failed');
       return row as Customer;
     }
 
     return result.data;
   }
 
+  /**
+   * Retrieves all invoices for a specific customer.
+   */
   async getCustomerInvoices(customerId: number): Promise<Invoice[]> {
     const rows = await db('invoice').where({ customerId });
-    // Инвойсы обычно чище, но safeParse лишним не будет
+    
     return rows.map(row => {
       const res = InvoiceSchema.safeParse(row);
       return res.success ? res.data : (row as Invoice);
     });
   }
 
+  /**
+   * Fetches the sales support employee associated with a customer.
+   */
   async getSalesAgent(customerId: number): Promise<Employee> {
     const agent = await db('customer')
       .join('employee', 'customer.support_rep_id', 'employee.employee_id')

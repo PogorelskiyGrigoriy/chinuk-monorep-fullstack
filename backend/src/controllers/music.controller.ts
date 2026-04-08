@@ -1,19 +1,15 @@
 /**
  * @module MusicController
- * Handles requests for albums, playlists, and track details.
+ * Controller for managing music-related API requests.
  */
 import type { Request, Response, NextFunction } from 'express';
 import { type MusicService } from '../services/entities.service.js';
-import { NotFoundError } from '../utils/app-errors.js';
 
 export class MusicController {
-  /**
-   * Зависит от MusicService (реализация MusicKnexService).
-   */
   constructor(private musicService: MusicService) {}
 
   /**
-   * ТЗ 1.2: Список всех альбомов с именами артистов.
+   * GET /api/albums - Returns all albums.
    */
   getAlbums = async (_req: Request, res: Response, next: NextFunction) => {
     try {
@@ -25,7 +21,7 @@ export class MusicController {
   };
 
   /**
-   * ТЗ 1.2.1.3: Список треков конкретного альбома.
+   * GET /api/albums/:id/tracks - Returns tracks for a specific album.
    */
   getAlbumTracks = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -38,7 +34,7 @@ export class MusicController {
   };
 
   /**
-   * ТЗ 1.3: Список всех плейлистов.
+   * GET /api/playlists - Returns all playlists.
    */
   getPlaylists = async (_req: Request, res: Response, next: NextFunction) => {
     try {
@@ -50,7 +46,7 @@ export class MusicController {
   };
 
   /**
-   * ТЗ 1.3.1.3: Список треков конкретного плейлиста.
+   * GET /api/playlists/:id/tracks - Returns tracks for a specific playlist.
    */
   getPlaylistTracks = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -63,7 +59,7 @@ export class MusicController {
   };
 
   /**
-   * ТЗ 1.1.1.2.1.1: Список треков для конкретного счета (инвойса).
+   * GET /api/invoices/:id/tracks - Returns items from a specific invoice.
    */
   getInvoiceTracks = async (req: Request, res: Response, next: NextFunction) => {
     try {

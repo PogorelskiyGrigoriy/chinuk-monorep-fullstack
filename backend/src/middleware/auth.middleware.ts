@@ -1,17 +1,14 @@
 /**
  * @module AuthMiddleware
- * Middleware for JWT verification and Role-Based Access Control (RBAC).
+ * JWT protection and Role-Based Access Control (RBAC).
  */
 import type { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import { ENV } from "../config/env.js";
 import { type JwtPayload, type UserRole } from "@project/shared";
 import { UnauthorizedError, ForbiddenError } from "../utils/app-errors.js";
+import logger from "../utils/pino-logger.js";
 
-/**
- * Расширяем интерфейс Request от Express.
- * Теперь TS будет знать, что у объекта req есть поле user.
- */
 declare global {
   namespace Express {
     interface Request {
@@ -21,28 +18,21 @@ declare global {
 }
 
 /**
- * ТЗ 2.4 & 2.5: Проверка JWT токена.
- * Если токен валиден, добавляет данные пользователя в req.user.
+ * Validates JWT in Authorization header.
  */
 export const protect = (req: Request, _res: Response, next: NextFunction) => {
   const authHeader = req.headers.authorization;
 
-  // 1. Проверяем наличие заголовка и префикса Bearer
   if (!authHeader?.startsWith("Bearer ")) {
-    throw new UnauthorizedError("Not authorized, no token provided");
+    throw new UnauthorizedError("Bearer token required");
   }
 
-  // 2. Достаем сам токен
   const token = authHeader.split(" ")[1];
-
-  if (!token) {
-    throw new UnauthorizedError("Not authorized, token is missing");
-  }
+  if (!token) throw new UnauthorizedError("Token missing");
 
   try {
     const decoded = jwt.verify(token, ENV.JWT_SECRET) as unknown as JwtPayload;
     
-    // Теперь ключи в req.user полностью совпадают с JwtPayload и ожиданиями контроллера
     req.user = {
       employeeId: decoded.employeeId,
       email: decoded.email,
@@ -51,27 +41,26 @@ export const protect = (req: Request, _res: Response, next: NextFunction) => {
 
     next();
   } catch (error) {
-    // Если токен протух или подпись неверна
-    throw new UnauthorizedError("Not authorized, invalid or expired token");
+    logger.debug({ error }, "JWT verification failed");
+    throw new UnauthorizedError("Invalid session token");
   }
 };
 
 /**
- * ТЗ 2.5: Проверка прав доступа (Authorization).
- * Сравнивает роль пользователя с разрешенными ролями для роута.
+ * Validates user permissions based on roles.
  */
 export const authorize = (...roles: UserRole[]) => {
   return (req: Request, _res: Response, next: NextFunction) => {
-    // Проверяем, прошел ли запрос через 'protect'
     if (!req.user) {
-      throw new UnauthorizedError("Authentication required");
+      throw new UnauthorizedError("Identity verification required");
     }
 
-    // Проверяем, есть ли у пользователя нужная роль (ТЗ 2.5.2 - 2.5.4)
     if (!roles.includes(req.user.role)) {
-      throw new ForbiddenError(
-        `Access denied: role '${req.user.role}' is not authorized for this action`
+      logger.warn(
+        { user: req.user.email, role: req.user.role, required: roles },
+        "Unauthorized access attempt"
       );
+      throw new ForbiddenError("Insufficient permissions for this resource");
     }
 
     next();

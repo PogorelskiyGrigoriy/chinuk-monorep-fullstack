@@ -1,16 +1,20 @@
+/**
+ * @module DatabaseInfrastructure
+ * Knex configuration for PostgreSQL (Supabase).
+ * Handles automatic case conversion between DB (snake_case) and JS (camelCase).
+ */
 import knex from 'knex';
 import { ENV } from '../config/env.js';
 import logger from '../utils/pino-logger.js';
 
 /**
- * Case conversion helpers:
- * DB (snake_case) <-> JS (camelCase)
+ * Case conversion utility functions.
  */
 const toCamel = (str: string) => str.replace(/_([a-z])/g, (g) => g[1].toUpperCase());
 const toSnake = (str: string) => str.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`);
 
 /**
- * Knex instance for PostgreSQL (Supabase)
+ * Knex instance initialization.
  */
 export const db = knex({
   client: 'pg',
@@ -20,29 +24,27 @@ export const db = knex({
     password: ENV.DB_PASSWORD,
     database: ENV.DB_NAME,
     port: ENV.DB_PORT,
-    ssl: { rejectUnauthorized: false }, // Critical for Supabase connection
+    ssl: { rejectUnauthorized: false }, // Required for Supabase security
   },
 
   /**
-   * Automatic conversion: snake_case (DB) -> camelCase (JS)
+   * Response Hook: Converts DB snake_case columns to JS camelCase.
    */
   postProcessResponse: (result) => {
     if (!result) return result;
     
     const convertRow = (row: any) => {
       if (typeof row !== 'object' || row === null) return row;
-      const newNode: any = {};
-      for (const key of Object.keys(row)) {
-        newNode[toCamel(key)] = row[key];
-      }
-      return newNode;
+      
+      const entries = Object.entries(row).map(([key, value]) => [toCamel(key), value]);
+      return Object.fromEntries(entries);
     };
 
     return Array.isArray(result) ? result.map(convertRow) : convertRow(result);
   },
 
   /**
-   * Automatic conversion: camelCase (JS) -> snake_case (DB)
+   * Identifier Wrapper: Converts JS camelCase identifiers to DB snake_case.
    */
   wrapIdentifier: (value, origImpl) => {
     if (value === '*') return origImpl(value);
@@ -51,18 +53,20 @@ export const db = knex({
 });
 
 /**
- * Logging query executions for debugging (TZ 2.3)
+ * Lifecycle Events: Logging for observability and debugging.
  */
+
+// Debug SQL queries in development
 db.on('query', (data) => {
-  logger.debug({ sql: data.sql, bindings: data.bindings }, 'Executing SQL');
+  logger.debug({ sql: data.sql, bindings: data.bindings }, 'SQL Query Executing');
 });
 
-/**
- * Logging database errors (TZ 2.3)
- */
+// Capture and log database execution errors
 db.on('query-error', (error, data) => {
-  logger.error({ 
-    message: error.message, 
-    sql: data.sql 
-  }, 'SQL Query Error');
+  logger.error(
+    { message: error.message, sql: data.sql, bindings: data.bindings }, 
+    'Database Query Error'
+  );
 });
+
+logger.info('Database infrastructure initialized');

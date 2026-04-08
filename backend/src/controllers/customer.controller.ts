@@ -1,19 +1,16 @@
 /**
  * @module CustomerController
- * Handles requests related to customers, invoices, and sales agents.
+ * Orchestrates customer-related requests between the route layer and domain services.
  */
 import type { Request, Response, NextFunction } from 'express';
-import { type CustomersService } from 'src/services/entities.service.js';
+import { type CustomersService } from '../services/entities.service.js';
 import { NotFoundError } from '../utils/app-errors.js';
 
 export class CustomerController {
-  /**
-   * Внедряем CustomersService для работы с БД Chinook.
-   */
   constructor(private customersService: CustomersService) {}
 
   /**
-   * ТЗ 1.1: Получить список всех клиентов для главной таблицы.
+   * GET /api/customers - Retrieves full list of customers.
    */
   getAll = async (_req: Request, res: Response, next: NextFunction) => {
     try {
@@ -25,7 +22,7 @@ export class CustomerController {
   };
 
   /**
-   * Получить детальную информацию о конкретном клиенте.
+   * GET /api/customers/:id - Retrieves a single customer profile.
    */
   getById = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -41,7 +38,7 @@ export class CustomerController {
   };
 
   /**
-   * ТЗ 1.1.1.2.1: Получить все счета (инвойсы) клиента.
+   * GET /api/customers/:id/invoices - Retrieves customer billing history.
    */
   getInvoices = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -54,7 +51,7 @@ export class CustomerController {
   };
 
   /**
-   * ТЗ 1.1.1.2.2: Получить данные агента по продажам, закрепленного за клиентом.
+   * GET /api/customers/:id/sales-agent - Retrieves assigned support representative.
    */
   getSalesAgent = async (req: Request, res: Response, next: NextFunction) => {
     try {

@@ -1,5 +1,13 @@
+/**
+ * @module AppErrors
+ * Custom error classes for handled operational failures.
+ * Ensures consistent error structure across the application.
+ */
 import { type AppErrorCode } from "@project/shared";
 
+/**
+ * Base class for all operational errors.
+ */
 export class AppError extends Error {
   constructor(
     public override message: string,
@@ -8,6 +16,7 @@ export class AppError extends Error {
     public details: unknown = null
   ) {
     super(message);
+    // Maintain proper stack trace and prototype chain
     Object.setPrototypeOf(this, new.target.prototype);
     Error.captureStackTrace(this, this.constructor);
   }
@@ -43,9 +52,6 @@ export class ForbiddenError extends AppError {
   }
 }
 
-/**
- * Error for malformed requests or logical invalidity.
- */
 export class BadRequestError extends AppError {
   constructor(message: string = "Bad Request") {
     super(message, 400, 'BAD_REQUEST');

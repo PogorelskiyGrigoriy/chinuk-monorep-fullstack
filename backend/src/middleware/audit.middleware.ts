@@ -1,13 +1,13 @@
 /**
  * @module AuditMiddleware
- * Automatically records data access events using the application logger.
+ * Express middleware for automatic data access recording.
  */
 import type { Request, Response, NextFunction } from "express";
 import { services } from "../services/service.factory.js";
-import logger from "../utils/pino-logger.js"; // Импортируем наш логгер
+import logger from "../utils/pino-logger.js";
 
 /**
- * Middleware для логирования чтения данных.
+ * Tracks DATA_READ actions for protected resources.
  */
 export const auditRead = (resource: string) => {
   return async (req: Request, _res: Response, next: NextFunction) => {
@@ -26,7 +26,6 @@ export const auditRead = (resource: string) => {
         });
       }
     } catch (error) {
-      // Заменяем console.error на профессиональный pino-logger
       logger.error(
         { error, resource, user: req.user?.email }, 
         `Audit logging failed for resource: ${resource}`

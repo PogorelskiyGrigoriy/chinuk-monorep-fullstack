@@ -1,49 +1,55 @@
+/**
+ * @module EntitiesService
+ * Interface definitions for core domain services.
+ * Follows the repository pattern to decouple business logic from data access.
+ */
 import type { 
   Customer, 
   Invoice, 
   Employee, 
-  Album, 
   Playlist, 
   TrackDetail, 
   AlbumWithArtist
 } from "@project/shared";
 
 /**
- * Сервис для работы с клиентами и их связями (ТЗ 1.1)
+ * Service for managing customers and their billing relations.
+ * Corresponds to Requirements 1.1.
  */
 export interface CustomersService {
-  /** Получить всех клиентов для таблицы */
+  /** Retrieves a list of all customers for the main table view. */
   getAll(): Promise<Customer[]>;
   
-  /** Получить данные конкретного клиента */
+  /** Retrieves detailed data for a specific customer. */
   getById(id: number): Promise<Customer | null>;
 
-  /** Получить все счета (invoices) конкретного клиента */
+  /** Retrieves all invoices associated with a specific customer. */
   getCustomerInvoices(customerId: number): Promise<Invoice[]>;
 
-  /** Получить данные агента по продажам для клиента */
+  /** Retrieves the support representative (employee) assigned to a customer. */
   getSalesAgent(customerId: number): Promise<Employee>;
 }
 
 /**
- * Сервис для музыкального каталога (ТЗ 1.2 и 1.3)
+ * Service for the music catalog management.
+ * Corresponds to Requirements 1.2 and 1.3.
  */
 export interface MusicService {
-  // --- Альбомы ---
-  /** Получить список всех альбомов (с именами артистов) */
+  // --- Albums ---
+  /** Retrieves all albums including artist information. */
   getAlbums(): Promise<AlbumWithArtist[]>;
   
-  /** Получить треки конкретного альбома */
+  /** Retrieves all tracks belonging to a specific album. */
   getAlbumTracks(albumId: number): Promise<TrackDetail[]>;
 
-  // --- Плейлисты ---
-  /** Получить список всех плейлистов */
+  // --- Playlists ---
+  /** Retrieves a list of all available playlists. */
   getPlaylists(): Promise<Playlist[]>;
   
-  /** Получить треки конкретного плейлиста */
+  /** Retrieves all tracks included in a specific playlist. */
   getPlaylistTracks(playlistId: number): Promise<TrackDetail[]>;
 
-  // --- Инвойсы ---
-  /** Получить треки, входящие в конкретный счет */
+  // --- Invoices ---
+  /** Retrieves track details for all items within a specific invoice. */
   getInvoiceTracks(invoiceId: number): Promise<TrackDetail[]>;
 }
