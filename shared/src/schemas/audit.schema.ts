@@ -17,7 +17,7 @@ export const auditLogSchema = z.object({
   // Меняем userId на employeeId для консистентности с AuthSchema и БД Chinook
   employeeId: z.number().int().positive(),
   
-  email: z.string().email(),
+  email: z.email(),
   action: auditActionSchema,
   resource: z.string().optional(),
   metadata: z.record(z.string(), z.any()).optional(),
