@@ -1,38 +1,45 @@
+/**
+ * @module EntitiesSchema
+ * Domain models and DTOs reflecting the Chinook database structure.
+ * Uses 'z.coerce' for dates to handle JSON serialization.
+ */
 import { z } from 'zod';
 
-// --- Artist ---
+// --- Core Database Entities ---
+
+/** @entity Artist */
 export const ArtistSchema = z.object({
   artistId: z.number().int(),
   name: z.string().nullable(),
 });
 export type Artist = z.infer<typeof ArtistSchema>;
 
-// --- Album ---
+/** @entity Album */
 export const AlbumSchema = z.object({
   albumId: z.number().int(),
-  title: z.string(),
+  title: z.string().min(1),
   artistId: z.number().int(),
 });
 export type Album = z.infer<typeof AlbumSchema>;
 
-// --- Genre ---
+/** @entity Genre */
 export const GenreSchema = z.object({
   genreId: z.number().int(),
   name: z.string().nullable(),
 });
 export type Genre = z.infer<typeof GenreSchema>;
 
-// --- Media Type ---
+/** @entity Media Type */
 export const MediaTypeSchema = z.object({
   mediaTypeId: z.number().int(),
   name: z.string().nullable(),
 });
 export type MediaType = z.infer<typeof MediaTypeSchema>;
 
-// --- Track ---
+/** @entity Track */
 export const TrackSchema = z.object({
   trackId: z.number().int(),
-  name: z.string(),
+  name: z.string().min(1),
   albumId: z.number().int().nullable(),
   mediaTypeId: z.number().int(),
   genreId: z.number().int().nullable(),
@@ -43,11 +50,11 @@ export const TrackSchema = z.object({
 });
 export type Track = z.infer<typeof TrackSchema>;
 
-// --- Employee ---
+/** @entity Employee (Sales Support/Staff) */
 export const EmployeeSchema = z.object({
   employeeId: z.number().int(),
-  lastName: z.string(),
-  firstName: z.string(),
+  lastName: z.string().min(1),
+  firstName: z.string().min(1),
   title: z.string().nullable(),
   reportsTo: z.number().int().nullable(),
   birthDate: z.coerce.date().nullable(),
@@ -63,11 +70,11 @@ export const EmployeeSchema = z.object({
 });
 export type Employee = z.infer<typeof EmployeeSchema>;
 
-// --- Customer ---
+/** @entity Customer */
 export const CustomerSchema = z.object({
   customerId: z.number().int(),
-  firstName: z.string(),
-  lastName: z.string(),
+  firstName: z.string().min(1),
+  lastName: z.string().min(1),
   company: z.string().nullable(),
   address: z.string().nullable(),
   city: z.string().nullable(),
@@ -76,12 +83,13 @@ export const CustomerSchema = z.object({
   postalCode: z.string().nullable(),
   phone: z.string().nullable(),
   fax: z.string().nullable(),
-  email: z.string().email(),
+  // Strict email validation is kept. Backend safeParse handles "dirty" records.
+  email: z.string().email("Invalid customer email format"),
   supportRepId: z.number().int().nullable(),
 });
 export type Customer = z.infer<typeof CustomerSchema>;
 
-// --- Invoice ---
+/** @entity Invoice */
 export const InvoiceSchema = z.object({
   invoiceId: z.number().int(),
   customerId: z.number().int(),
@@ -95,50 +103,30 @@ export const InvoiceSchema = z.object({
 });
 export type Invoice = z.infer<typeof InvoiceSchema>;
 
-// --- Invoice Line ---
-export const InvoiceLineSchema = z.object({
-  invoiceLineId: z.number().int(),
-  invoiceId: z.number().int(),
-  trackId: z.number().int(),
-  unitPrice: z.number(),
-  quantity: z.number().int(),
-});
-export type InvoiceLine = z.infer<typeof InvoiceLineSchema>;
-
-// --- Playlist ---
+/** @entity Playlist */
 export const PlaylistSchema = z.object({
   playlistId: z.number().int(),
   name: z.string().nullable(),
 });
 export type Playlist = z.infer<typeof PlaylistSchema>;
 
-// --- Playlist Track ---
-export const PlaylistTrackSchema = z.object({
-  playlistId: z.number().int(),
-  trackId: z.number().int(),
-});
-export type PlaylistTrack = z.infer<typeof PlaylistTrackSchema>;
+// --- Data Transfer Objects (DTOs) for UI views ---
 
-/**
- * Сводная информация о треке для таблиц "Details" (ТЗ 1.1, 1.2, 1.3)
- * Объединяет данные из таблиц track, genre и media_type.
+/** * Extended track info for detailed tables (Requirements 1.1, 1.2, 1.3).
+ * Flattens relationships with Genre and MediaType.
  */
 export const TrackDetailSchema = z.object({
   trackId: z.number().int(),
-  trackName: z.string(),
+  // Matches SQL 'track.name' field
+  name: z.string(), 
   genreName: z.string().nullable(),
   mediaTypeName: z.string().nullable(),
 });
-
 export type TrackDetail = z.infer<typeof TrackDetailSchema>;
 
-// --- Album with Artist Name (DTO для ТЗ 1.2) ---
-/**
- * Расширенная сущность альбома, включающая имя артиста.
- * Используется для отображения списка альбомов в UI.
+/** * Album DTO including the Artist name for UI display (Requirement 1.2).
  */
 export const AlbumWithArtistSchema = AlbumSchema.extend({
   artistName: z.string().nullable(),
 });
-
 export type AlbumWithArtist = z.infer<typeof AlbumWithArtistSchema>;
