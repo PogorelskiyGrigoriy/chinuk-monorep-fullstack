@@ -14,6 +14,7 @@ export * from './types/audit.types.js';
 
 // 3. UI Helpers & Common Logic
 export * from './schemas/common.schema.js';
+export * from './types/common.types.js';
 
 // 4. Data Domain (Chinook Database)
 export * from './schemas/entities.js';
