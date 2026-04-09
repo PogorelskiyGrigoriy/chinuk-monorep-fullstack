@@ -7,13 +7,14 @@ import {
   type Invoice, 
   type Employee, 
   type Pagination, 
-  type SortParams 
+  type SortParams, 
+  type PaginatedResponse
 } from "@project/shared";
 
 export interface CustomerService {
   /** * Получить список всех клиентов с поддержкой пагинации и сортировки (ТЗ 1.1) 
    */
-  getAll(params?: Pagination & SortParams): Promise<Customer[]>;
+  getAll(params?: Pagination & SortParams): Promise<PaginatedResponse<Customer>>;
   
   /** Получить детальную информацию о клиенте (ТЗ 1.1.1.2) */
   getById(id: number): Promise<Customer>;

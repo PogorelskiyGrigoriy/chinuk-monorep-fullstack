@@ -1,28 +1,29 @@
 /**
  * @module MusicService
- * Интерфейс для работы с музыкальным каталогом.
+ * Interface for interacting with the music catalog.
  */
 import { 
   type AlbumWithArtist, 
   type TrackDetail, 
   type Playlist,
   type Pagination,
-  type SortParams 
+  type SortParams,
+  type PaginatedResponse
 } from "@project/shared";
 
 export interface MusicService {
-  /** Получить все альбомы с поддержкой пагинации (ТЗ 1.2) */
-  getAlbums(params?: Pagination & SortParams): Promise<AlbumWithArtist[]>;
+  // Retrieves albums with artist info and pagination support
+  getAlbums(params?: Pagination & SortParams): Promise<PaginatedResponse<AlbumWithArtist>>;
   
-  /** Получить треки конкретного альбома (ТЗ 1.2.1.3) */
+  // Retrieves tracks for a specific album (Req 1.2.1.3)
   getAlbumTracks(albumId: number): Promise<TrackDetail[]>;
   
-  /** Получить все плейлисты (ТЗ 1.3) */
-  getPlaylists(): Promise<Playlist[]>;
+  // Retrieves all playlists with pagination support
+  getPlaylists(params?: Pagination): Promise<PaginatedResponse<Playlist>>;
   
-  /** Получить треки конкретного плейлиста (ТЗ 1.3.1.3) */
+  // Retrieves tracks for a specific playlist
   getPlaylistTracks(playlistId: number): Promise<TrackDetail[]>;
   
-  /** Получить треки из конкретного инвойса (ТЗ 1.1.1.2.1.1) */
+  // Retrieves tracks from a specific invoice
   getInvoiceTracks(invoiceId: number): Promise<TrackDetail[]>;
 }
