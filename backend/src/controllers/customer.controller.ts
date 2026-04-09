@@ -5,17 +5,21 @@
 import type { Request, Response, NextFunction } from 'express';
 import { type CustomersService } from '../services/entities.service.js';
 import { NotFoundError } from '../utils/app-errors.js';
+import { paginationSchema } from '@project/shared';
 
 export class CustomerController {
   constructor(private customersService: CustomersService) {}
 
   /**
-   * GET /api/customers - Retrieves full list of customers.
+   * GET /api/customers - Retrieves paginated list of customers.
    */
-  getAll = async (_req: Request, res: Response, next: NextFunction) => {
+  getAll = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const customers = await this.customersService.getAll();
-      res.json(customers);
+      // Parse and validate page/limit from query string (?page=1&limit=10)
+      const params = paginationSchema.parse(req.query);
+      
+      const result = await this.customersService.getAll(params);
+      res.json(result);
     } catch (e) {
       next(e);
     }

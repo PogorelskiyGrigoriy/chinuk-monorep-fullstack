@@ -17,15 +17,15 @@ import { AppInitializer } from "./components/auth/AppInitializer";
 
 /**
  * QueryClient Initialization.
- * Optimized for CRM: 5-minute stale time, 
- * window focus refetching disabled to prevent excessive API calls.
+ * Optimized for CRM: 5-minute data freshness, 
+ * focus refetching disabled to minimize unnecessary API calls.
  */
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      refetchOnWindowFocus: false, // Prevents spamming backend on tab switch
-      retry: 1,                    // Single retry on network failure
-      staleTime: 1000 * 60 * 5,    // Data considered fresh for 5 minutes
+      refetchOnWindowFocus: false, // Prevents server spam on tab switching
+      retry: 1,                    // Single retry attempt for transient errors
+      staleTime: 1000 * 60 * 5,    // Data is considered fresh for 5 minutes
     },
   },
 });
@@ -44,15 +44,15 @@ createRoot(rootElement).render(
       {/* 2. UI Layer: Chakra UI */}
       <ChakraProvider> 
         
-        {/* 3. Session Logic: Validates token before app starts */}
+        {/* 3. Session Logic: Validates user session before mounting the app */}
         <AppInitializer>
           
-          {/* 4. Navigation Layer: React Router */}
+          {/* 4. Routing Layer: React Router */}
           <RouterProvider router={appRouter} />
           
         </AppInitializer>
         
-        {/* Global Notifications */}
+        {/* Global Toast Notifications */}
         <Toaster /> 
         
       </ChakraProvider>

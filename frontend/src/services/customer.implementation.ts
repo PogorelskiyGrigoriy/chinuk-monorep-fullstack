@@ -14,7 +14,9 @@ import {
   type Invoice, 
   type Employee,
   type Pagination,
-  type SortParams
+  type SortParams,
+  type PaginatedResponse,
+  createPaginatedResponseSchema
 } from "@project/shared";
 import type { CustomerService } from "./customer.service";
 
@@ -24,18 +26,18 @@ class CustomerServiceRest implements CustomerService {
    * Получает список всех клиентов.
    * ИСПРАВЛЕНО: Добавлена детальная диагностика ошибок валидации.
    */
-  async getAll(params?: Pagination & SortParams): Promise<Customer[]> {
-    const { data } = await api.get<Customer[]>(API_ENDPOINTS.CUSTOMERS.BASE, { params });
+  async getAll(params?: Pagination & SortParams): Promise<PaginatedResponse<Customer>> {
+    // 1. Указываем правильный тип в дженерике axios
+    const { data } = await api.get<PaginatedResponse<Customer>>(API_ENDPOINTS.CUSTOMERS.BASE, { params });
     
-    // Используем safeParse для массива, чтобы не блокировать UI при ошибках в схеме
-    const result = z.array(CustomerSchema).safeParse(data);
+    // 2. Создаем схему для пагинированного ответа
+    const paginatedSchema = createPaginatedResponseSchema(CustomerSchema);
+    const result = paginatedSchema.safeParse(data);
     
     if (!result.success) {
-      // Это критически важно для разработки — покажет, какое именно поле в БД «битое»
-      console.error("❌ Customer Validation Error:", result.error.format());
-      
-      // Возвращаем данные как есть (fallback), чтобы таблица не была пустой
-      return data as Customer[];
+      console.error("❌ Customers Pagination Validation Error:", result.error.format());
+      // Возвращаем как есть (fallback), чтобы не ломать UI
+      return data;
     }
 
     return result.data;

@@ -10,7 +10,9 @@ import {
   EmployeeSchema,
   type Customer, 
   type Invoice, 
-  type Employee 
+  type Employee,
+  type Pagination, 
+  type PaginatedResponse
 } from '@project/shared';
 import { CustomersService } from '../../entities.service.js';
 import { NotFoundError } from '../../../utils/app-errors.js';
@@ -18,26 +20,36 @@ import logger from '../../../utils/pino-logger.js';
 
 export class CustomersKnexService implements CustomersService {
   
-  /**
-   * Retrieves all customers.
-   * Uses safeParse to prevent service failure on legacy data integrity issues.
-   */
-  async getAll(): Promise<Customer[]> {
-    const rows = await db('customer').select('*');
-    
-    return rows.map(row => {
+  async getAll(params: Pagination): Promise<PaginatedResponse<Customer>> {
+    const { page, limit } = params;
+    const offset = (page - 1) * limit;
+
+    // 1. Fetch data slice
+    const rows = await db('customer')
+      .select('*')
+      .limit(limit)
+      .offset(offset)
+      .orderBy('customer_id', 'asc');
+
+    // 2. Fetch total count for metadata
+    const countRes = await db('customer').count('customer_id as total').first();
+    const total = Number(countRes?.total || 0);
+
+    // 3. Map and validate results
+    const data = rows.map(row => {
       const result = CustomerSchema.safeParse(row);
-      
-      if (!result.success) {
-        logger.warn(
-          { customerId: row.customerId, errors: result.error.format() }, 
-          'Data integrity issue detected in customer record'
-        );
-        return row as Customer; 
-      }
-      
-      return result.data;
+      return result.success ? result.data : (row as Customer);
     });
+
+    return {
+      data,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit)
+      }
+    };
   }
 
   /**

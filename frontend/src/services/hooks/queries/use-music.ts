@@ -1,32 +1,41 @@
+/**
+ * @module MusicQueries
+ * TanStack Query hooks for music catalog data.
+ * Supports paginated albums and playlists, and contextual track lists.
+ */
 import { useQuery } from "@tanstack/react-query";
 import { musicService } from "@/services/music.implementation";
 import { type Pagination, type SortParams } from "@project/shared";
 
-/** Список альбомов с пагинацией (ТЗ 1.2) */
+/** * Fetches paginated list of albums (Requirement 1.2).
+ * queryKey includes params to ensure automatic refetch on page change.
+ */
 export const useAlbums = (params: Pagination & SortParams) => {
   return useQuery({
-    queryKey: ["albums", params],
+    queryKey: ["music", "albums", params],
     queryFn: () => musicService.getAlbums(params),
-    staleTime: 1000 * 60 * 10, // Альбомы меняются редко
+    staleTime: 1000 * 60 * 10, // Albums data is relatively static
   });
 };
 
-/** Список плейлистов (ТЗ 1.3) */
-export const usePlaylists = () => {
+/** * Fetches paginated list of playlists (Requirement 1.3).
+ * UPDATED: Now accepts pagination params and includes them in queryKey.
+ */
+export const usePlaylists = (params: Pagination) => {
   return useQuery({
-    queryKey: ["playlists"],
-    queryFn: () => musicService.getPlaylists(),
-    staleTime: 1000 * 60 * 30,
+    queryKey: ["music", "playlists", params],
+    queryFn: () => musicService.getPlaylists(params),
+    staleTime: 1000 * 60 * 30, // Playlists change very rarely
   });
 };
 
 /**
- * Универсальный хук для треков (ТЗ 1.1.1, 1.2.1, 1.3.1)
- * Автоматически выбирает нужный метод сервиса в зависимости от контекста
+ * Universal hook for track lists (Requirements 1.1.1, 1.2.1, 1.3.1).
+ * Routes to specific service methods based on the source type.
  */
 export const useTracks = (type: "album" | "playlist" | "invoice", id: number | null) => {
   return useQuery({
-    queryKey: ["tracks", type, id],
+    queryKey: ["music", "tracks", type, id],
     queryFn: () => {
       if (type === "album") return musicService.getAlbumTracks(id!);
       if (type === "playlist") return musicService.getPlaylistTracks(id!);

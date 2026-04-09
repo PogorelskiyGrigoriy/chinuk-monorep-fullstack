@@ -51,3 +51,18 @@ export interface FilterOption {
     readonly label: string;
     readonly value: string | number;
 }
+
+/**
+ * Generic paginated response schema (Response Wrapper).
+ * Wraps an entity schema (e.g., CustomerSchema) with pagination metadata.
+ */
+export const createPaginatedResponseSchema = <T extends z.ZodTypeAny>(itemSchema: T) =>
+  z.object({
+    data: z.array(itemSchema), // Array of entity items
+    meta: z.object({
+      total: z.number().int(),      // Total count of records in the database
+      page: z.number().int(),       // Current page number
+      limit: z.number().int(),      // Items per page
+      totalPages: z.number().int(), // Total number of pages (total / limit)
+    }),
+  });
