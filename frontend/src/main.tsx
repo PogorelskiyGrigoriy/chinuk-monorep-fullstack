@@ -16,9 +16,6 @@ import { Toaster } from './components/chakra-ui/toaster';
 import { appRouter } from "./router/app-router";
 import { AppInitializer } from "./components/auth/AppInitializer";
 
-// Глобальные стили
-import './index.css';
-
 /**
  * Инициализация QueryClient.
  * Оптимизировано под CRM: данные живут 5 минут, 

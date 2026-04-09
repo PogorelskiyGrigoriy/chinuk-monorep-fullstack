@@ -83,8 +83,7 @@ export const CustomerSchema = z.object({
   postalCode: z.string().nullable(),
   phone: z.string().nullable(),
   fax: z.string().nullable(),
-  // Strict email validation is kept. Backend safeParse handles "dirty" records.
-  email: z.string().email("Invalid customer email format"),
+  email: z.string().nullable(), 
   supportRepId: z.number().int().nullable(),
 });
 export type Customer = z.infer<typeof CustomerSchema>;
@@ -117,8 +116,7 @@ export type Playlist = z.infer<typeof PlaylistSchema>;
  */
 export const TrackDetailSchema = z.object({
   trackId: z.number().int(),
-  // Matches SQL 'track.name' field
-  name: z.string(), 
+  name: z.string().nullable(),
   genreName: z.string().nullable(),
   mediaTypeName: z.string().nullable(),
 });
