@@ -1,32 +1,31 @@
 /**
  * @module EntryPoint
- * Главная точка входа приложения Chinook Explorer.
+ * Main entry point for the Chinook Explorer application.
  */
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { RouterProvider } from "react-router-dom";
 
-// Провайдеры и компоненты UI
+// UI Providers and Components
 import { Provider as ChakraProvider } from "@/components/chakra-ui/provider";
 import { Toaster } from './components/chakra-ui/toaster';
 
-// Конфигурация приложения
+// Application Configuration
 import { appRouter } from "./router/app-router";
 import { AppInitializer } from "./components/auth/AppInitializer";
 
 /**
- * Инициализация QueryClient.
- * Оптимизировано под CRM: данные живут 5 минут, 
- * лишние перезапросы при потере фокуса отключены.
+ * QueryClient Initialization.
+ * Optimized for CRM: 5-minute stale time, 
+ * window focus refetching disabled to prevent excessive API calls.
  */
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      refetchOnWindowFocus: false, // Не спамим бэкенд при переключении вкладок
-      retry: 1,                   // Одна попытка при сбое сети
-      staleTime: 1000 * 60 * 5,    // Данные считаются свежими 5 минут
+      refetchOnWindowFocus: false, // Prevents spamming backend on tab switch
+      retry: 1,                    // Single retry on network failure
+      staleTime: 1000 * 60 * 5,    // Data considered fresh for 5 minutes
     },
   },
 });
@@ -34,32 +33,29 @@ const queryClient = new QueryClient({
 const rootElement = document.getElementById("root");
 
 if (!rootElement) {
-  throw new Error('Не удалось найти элемент #root. Проверьте index.html');
+  throw new Error('Failed to find #root element. Check index.html');
 }
 
 createRoot(rootElement).render(
   <StrictMode>
-    {/* 1. Слой данных: TanStack Query */}
+    {/* 1. Data Layer: TanStack Query */}
     <QueryClientProvider client={queryClient}>
       
-      {/* 2. Слой интерфейса: Chakra UI */}
+      {/* 2. UI Layer: Chakra UI */}
       <ChakraProvider> 
         
-        {/* 3. Слой логики сессии: Проверяет токен перед запуском приложения */}
+        {/* 3. Session Logic: Validates token before app starts */}
         <AppInitializer>
           
-          {/* 4. Слой навигации: React Router */}
+          {/* 4. Navigation Layer: React Router */}
           <RouterProvider router={appRouter} />
           
         </AppInitializer>
         
-        {/* Глобальные уведомления */}
+        {/* Global Notifications */}
         <Toaster /> 
         
       </ChakraProvider>
-
-      {/* Инструменты разработчика (автоматически скрываются в продакшене) */}
-      <ReactQueryDevtools initialIsOpen={false} />
       
     </QueryClientProvider>
   </StrictMode>
