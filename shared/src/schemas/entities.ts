@@ -98,7 +98,7 @@ export const InvoiceSchema = z.object({
   billingState: z.string().nullable(),
   billingCountry: z.string().nullable(),
   billingPostalCode: z.string().nullable(),
-  total: z.number(),
+  total: z.coerce.number(),
 });
 export type Invoice = z.infer<typeof InvoiceSchema>;
 
