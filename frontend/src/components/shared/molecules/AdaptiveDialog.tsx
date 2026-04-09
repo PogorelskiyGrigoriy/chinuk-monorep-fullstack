@@ -1,13 +1,14 @@
 /**
  * @module AdaptiveDialog
- * Универсальный компонент-обертка. 
- * Desktop (md+) -> Центрированное модальное окно.
- * Mobile (base, sm) -> Выезжающая снизу шторка (Drawer).
+ * Оптимизирован для многоэтапной навигации (Stage Management).
  */
 import { 
   useBreakpointValue,
-  Portal
+  Portal,
+  HStack,
+  IconButton
 } from "@chakra-ui/react";
+import { LuChevronLeft } from "react-icons/lu";
 import {
   DialogRoot,
   DialogContent,
@@ -17,7 +18,7 @@ import {
   DialogFooter,
   DialogCloseTrigger,
   DialogBackdrop,
-} from "@/components/chakra-ui/dialog"; // Путь к вашим сниппетам Chakra v3
+} from "@/components/chakra-ui/dialog";
 
 interface AdaptiveDialogProps {
   isOpen: boolean;
@@ -26,6 +27,8 @@ interface AdaptiveDialogProps {
   children: React.ReactNode;
   footer?: React.ReactNode;
   size?: "xs" | "sm" | "md" | "lg" | "xl" | "full";
+  /** НОВОЕ: Колбэк для кнопки назад. Если передан — кнопка появится в хедере */
+  onBack?: () => void; 
 }
 
 export const AdaptiveDialog = ({
@@ -34,45 +37,58 @@ export const AdaptiveDialog = ({
   title,
   children,
   footer,
-  size = "md"
+  size = "md",
+  onBack
 }: AdaptiveDialogProps) => {
   
-  // Определяем режим отображения на основе ширины экрана
   const isMobile = useBreakpointValue({ base: true, md: false });
 
   return (
     <DialogRoot 
       open={isOpen} 
       onOpenChange={(e) => !e.open && onClose()}
-      // На мобилках прижимаем к низу, на десктопе — по центру
       placement={isMobile ? "bottom" : "center"}
       size={isMobile ? "full" : size}
-      scrollBehavior="inside"
+      // Это важно для длинных списков инвойсов
+      scrollBehavior="inside" 
     >
       <Portal>
         <DialogBackdrop />
         <DialogContent 
-          // Стилизация под Drawer для мобилок
           borderTopRadius={isMobile ? "2xl" : "xl"} 
           borderBottomRadius={isMobile ? "0" : "xl"}
           maxH={isMobile ? "90vh" : "85vh"}
           bg="bg.panel"
           boxShadow="2xl"
         >
-          {/* Хедер с заголовком */}
           <DialogHeader borderBottomWidth="1px" borderColor="border.subtle" py={4}>
-            <DialogTitle fontSize="lg" fontWeight="bold">
-              {title}
-            </DialogTitle>
+            <HStack gap={3}>
+              {/* НОВОЕ: Кнопка назад в хедере */}
+              {onBack && (
+                <IconButton
+                  variant="ghost"
+                  size="sm"
+                  onClick={onBack}
+                  aria-label="Назад"
+                >
+                  <LuChevronLeft />
+                </IconButton>
+              )}
+              
+              <DialogTitle fontSize="lg" fontWeight="bold">
+                {title}
+              </DialogTitle>
+            </HStack>
             <DialogCloseTrigger />
           </DialogHeader>
 
-          {/* Основной контент */}
           <DialogBody py={6}>
+            {/* Контент будет меняться здесь. 
+              Благодаря scrollBehavior="inside", хедер и футер всегда на месте. 
+            */}
             {children}
           </DialogBody>
 
-          {/* Футер (если передан) */}
           {footer && (
             <DialogFooter borderTopWidth="1px" borderColor="border.subtle" gap={3}>
               {footer}
