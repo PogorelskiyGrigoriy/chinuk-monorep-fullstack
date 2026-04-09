@@ -1,7 +1,7 @@
 /**
  * @module CustomersPage
- * Основная страница управления клиентами (ТЗ 1.1).
- * Реализует многоуровневую навигацию "Table-to-Drawer".
+ * Main customer management page (Requirement 1.1).
+ * Implements "Table-to-Drawer" navigation and server-side pagination.
  */
 import { useState } from "react";
 import { 
@@ -11,7 +11,7 @@ import {
   Separator, 
   Button, 
   Box,
-  useDisclosure 
+  useDisclosure
 } from "@chakra-ui/react";
 import { LuFileText, LuCircleUser, LuChevronRight } from "react-icons/lu";
 
@@ -23,6 +23,7 @@ import { AdaptiveDialog } from "@/components/shared/molecules/AdaptiveDialog";
 import { EntityDetailGrid } from "@/components/shared/molecules/EntityDetailGrid";
 import { TrackListTable } from "@/components/shared/organisms/TrackListTable";
 import { ActionIconButton } from "@/components/shared/atoms/ActionIconButton";
+import { AppPagination } from "@/components/shared/molecules/AppPagination";
 
 // Hooks & Types
 import { 
@@ -36,25 +37,27 @@ import { type Customer, type Invoice } from "@project/shared";
 type DrawerStage = "DETAILS" | "INVOICES" | "AGENT" | "TRACKS";
 
 export const CustomersPage = () => {
-  // 1. Состояние данных (setParams убран для чистоты линтера, пока нет переключения страниц)
-  const [params] = useState({ page: 1, limit: 10 });
-  const { data: customers, isLoading, isError, refetch } = useCustomers(params);
+  // 1. Pagination State
+  const [params, setParams] = useState({ page: 1, limit: 10 });
+  
+  // Use paginated hook - now receives { data, meta }
+  const { data: response, isLoading, isError, refetch } = useCustomers(params);
 
-  // 2. Управление состоянием диалога
+  // 2. Dialog & UI State
   const { open, onOpen, onClose } = useDisclosure();
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [stage, setStage] = useState<DrawerStage>("DETAILS");
 
-  // 3. Конфигурация колонок (ТЗ 1.1.1.1)
+  // 3. Table Column Configuration
   const columns: AppTableColumn<Customer>[] = [
-    { header: "Имя", accessor: "firstName", isPriority: true },
-    { header: "Фамилия", accessor: "lastName", isPriority: true },
-    { header: "Город", accessor: "city" },
-    { header: "Страна", accessor: "country" },
+    { header: "First Name", accessor: "firstName", isPriority: true },
+    { header: "Last Name", accessor: "lastName", isPriority: true },
+    { header: "City", accessor: "city" },
+    { header: "Country", accessor: "country" },
     { header: "Email", accessor: "email" },
     {
-      header: "Действия",
+      header: "Actions",
       accessor: (customer) => (
         <Stack direction="row" gap={2}>
           <ActionIconButton 
@@ -73,7 +76,7 @@ export const CustomersPage = () => {
     },
   ];
 
-  // 4. Логика переходов
+  // 4. Navigation Logic
   const handleOpenStage = (customer: Customer, targetStage: DrawerStage = "DETAILS") => {
     setSelectedCustomer(customer);
     setStage(targetStage);
@@ -87,10 +90,10 @@ export const CustomersPage = () => {
 
   const getTitle = () => {
     switch (stage) {
-      case "DETAILS": return "Информация о клиенте";
-      case "INVOICES": return "Счета клиента";
-      case "AGENT": return "Менеджер поддержки";
-      case "TRACKS": return `Треки счета #${selectedInvoice?.invoiceId}`;
+      case "DETAILS": return "Customer Info";
+      case "INVOICES": return "Customer Invoices";
+      case "AGENT": return "Support Representative";
+      case "TRACKS": return `Tracks for Invoice #${selectedInvoice?.invoiceId}`;
       default: return "";
     }
   };
@@ -105,15 +108,27 @@ export const CustomersPage = () => {
         <DataStateWrapper 
           isLoading={isLoading} 
           isError={isError} 
-          isEmpty={customers?.length === 0}
+          isEmpty={response?.data.length === 0}
           onRetry={refetch}
         >
-          <AppTable 
-            data={customers || []} 
-            columns={columns} 
-            keyExtractor={(c) => c.customerId}
-            onDetailClick={(c) => handleOpenStage(c, "DETAILS")}
-          />
+          <VStack align="stretch" gap={4}>
+            <AppTable 
+              data={response?.data || []} 
+              columns={columns} 
+              keyExtractor={(c) => c.customerId}
+              onDetailClick={(c) => handleOpenStage(c, "DETAILS")}
+            />
+            
+            {/* Using the unified pagination component */}
+            {response?.meta && (
+              <AppPagination 
+                page={response.meta.page}
+                totalPages={response.meta.totalPages}
+                totalItems={response.meta.total}
+                onPageChange={(newPage) => setParams(p => ({ ...p, page: newPage }))}
+              />
+            )}
+          </VStack>
         </DataStateWrapper>
       </AppPanel>
 
@@ -154,36 +169,34 @@ export const CustomersPage = () => {
   );
 };
 
-// --- Вспомогательные компоненты для чистой структуры ---
+// --- Sub-components for clean structure ---
 
-/** ЭКРАН 1: Детальная информация */
 const DetailsView = ({ customer, onInvoices, onAgent }: { 
   customer: Customer, onInvoices: () => void, onAgent: () => void 
 }) => (
   <VStack align="stretch" gap={6}>
     <EntityDetailGrid 
       fields={[
-        { label: "Имя", value: customer.firstName },
-        { label: "Фамилия", value: customer.lastName },
+        { label: "First Name", value: customer.firstName },
+        { label: "Last Name", value: customer.lastName },
         { label: "Email", value: customer.email, fullWidth: true },
-        { label: "Компания", value: customer.company, fullWidth: true },
-        { label: "Город", value: customer.city },
-        { label: "Страна", value: customer.country },
+        { label: "Company", value: customer.company, fullWidth: true },
+        { label: "City", value: customer.city },
+        { label: "Country", value: customer.country },
       ]} 
     />
     <Separator />
     <Stack direction={{ base: "column", sm: "row" }} gap={3}>
       <Button colorPalette="brand" w="full" onClick={onInvoices}>
-        <LuFileText /> Список счетов
+        <LuFileText /> Invoices List
       </Button>
       <Button variant="outline" w="full" onClick={onAgent}>
-        <LuCircleUser /> Менеджер
+        <LuCircleUser /> Manager Info
       </Button>
     </Stack>
   </VStack>
 );
 
-/** ЭКРАН 2: Список инвойсов */
 const InvoicesView = ({ customerId, onSelectInvoice }: { 
   customerId: number, onSelectInvoice: (inv: Invoice) => void 
 }) => {
@@ -201,13 +214,13 @@ const InvoicesView = ({ customerId, onSelectInvoice }: {
         keyExtractor={(inv) => inv.invoiceId}
         columns={[
           { header: "ID", accessor: "invoiceId", isPriority: true },
-          { header: "Дата", accessor: (inv) => new Date(inv.invoiceDate).toLocaleDateString() },
-          { header: "Сумма", accessor: (inv) => `$${inv.total.toFixed(2)}`, isPriority: true },
+          { header: "Date", accessor: (inv) => new Date(inv.invoiceDate).toLocaleDateString() },
+          { header: "Total", accessor: (inv) => `$${Number(inv.total).toFixed(2)}`, isPriority: true },
           { 
             header: "", 
             accessor: (inv) => (
               <Button size="xs" variant="ghost" onClick={() => onSelectInvoice(inv)}>
-                Детали <LuChevronRight />
+                Details <LuChevronRight />
               </Button>
             ) 
           }
@@ -217,18 +230,17 @@ const InvoicesView = ({ customerId, onSelectInvoice }: {
   );
 };
 
-/** ЭКРАН 3: Карточка агента */
 const AgentView = ({ customerId }: { customerId: number }) => {
   const { data, isLoading, isError, refetch } = useCustomerAgent(customerId);
   
   const fields = [
-    { label: "Имя", value: data?.firstName },
-    { label: "Фамилия", value: data?.lastName },
+    { label: "First Name", value: data?.firstName },
+    { label: "Last Name", value: data?.lastName },
     { label: "Email", value: data?.email, fullWidth: true },
-    { label: "Должность", value: data?.title, fullWidth: true },
-    { label: "Дата рождения", value: data?.birthDate ? new Date(data.birthDate).toLocaleDateString() : null },
-    { label: "Дата найма", value: data?.hireDate ? new Date(data.hireDate).toLocaleDateString() : null },
-    { label: "Город", value: data?.city },
+    { label: "Title", value: data?.title, fullWidth: true },
+    { label: "Birth Date", value: data?.birthDate ? new Date(data.birthDate).toLocaleDateString() : null },
+    { label: "Hire Date", value: data?.hireDate ? new Date(data.hireDate).toLocaleDateString() : null },
+    { label: "City", value: data?.city },
   ];
 
   return (
@@ -238,7 +250,6 @@ const AgentView = ({ customerId }: { customerId: number }) => {
   );
 };
 
-/** ЭКРАН 4: Список треков (вынесен в компонент из-за хуков) */
 const TracksStageView = ({ invoiceId }: { invoiceId: number }) => {
   const { data, isLoading, isError, refetch } = useTracks("invoice", invoiceId);
   

@@ -1,59 +1,66 @@
 /**
  * @module AlbumsPage
- * Страница музыкальных альбомов (ТЗ 1.2).
- * Роли: USER, SUPER_USER.
+ * Music albums catalog page (Requirement 1.2).
+ * Implements paginated view and track details drawer.
  */
 import { useState } from "react";
 import { Heading, VStack, useDisclosure } from "@chakra-ui/react";
 import { LuListMusic } from "react-icons/lu";
 
+// Shared UI Components
 import { AppPanel } from "@/components/shared/atoms/AppPanel";
 import { DataStateWrapper } from "@/components/shared/organisms/DataStateWrapper";
 import { AppTable, type AppTableColumn } from "@/components/shared/organisms/AppTable";
 import { AdaptiveDialog } from "@/components/shared/molecules/AdaptiveDialog";
 import { TrackListTable } from "@/components/shared/organisms/TrackListTable";
 import { ActionIconButton } from "@/components/shared/atoms/ActionIconButton";
+import { AppPagination } from "@/components/shared/molecules/AppPagination"; // New import
 
+// Hooks & Types
 import { useAlbums, useTracks } from "@/services/hooks/queries/use-music";
 import { type AlbumWithArtist } from "@project/shared";
 
 export const AlbumsPage = () => {
-  // 1. Состояние данных и пагинации
-  const [params] = useState({ page: 1, limit: 12 });
-  const { data: albums, isLoading, isError, refetch } = useAlbums(params);
+  // 1. Data and Pagination state
+  const [params, setParams] = useState({ page: 1, limit: 12 });
+  const { data: response, isLoading, isError, refetch } = useAlbums(params);
 
-  // 2. Состояние модального окна
+  // 2. Modal state
   const { open, onOpen, onClose } = useDisclosure();
   const [selectedAlbum, setSelectedAlbum] = useState<AlbumWithArtist | null>(null);
 
-  // 3. Конфигурация колонок (ТЗ 1.2.1.1 - 1.2.1.3)
+  // 3. Columns configuration
   const columns: AppTableColumn<AlbumWithArtist>[] = [
     { 
-      header: "Альбом", 
+      header: "Album", 
       accessor: "title", 
-      isPriority: true // Видно на мобилках
+      isPriority: true 
     },
     { 
-      header: "Артист", 
+      header: "Artist", 
       accessor: "artistName", 
       isPriority: true 
     },
     {
-      header: "Действия",
+      header: "Actions",
       accessor: (album) => (
         <ActionIconButton 
           icon={LuListMusic} 
-          label="Details" 
+          label="Tracks" 
           onClick={() => handleOpenTracks(album)} 
         />
       ),
     },
   ];
 
-  // 4. Обработчики
+  // 4. Handlers
   const handleOpenTracks = (album: AlbumWithArtist) => {
     setSelectedAlbum(album);
     onOpen();
+  };
+
+  const handlePageChange = (newPage: number) => {
+    setParams(prev => ({ ...prev, page: newPage }));
   };
 
   return (
@@ -66,19 +73,30 @@ export const AlbumsPage = () => {
         <DataStateWrapper 
           isLoading={isLoading} 
           isError={isError} 
-          isEmpty={albums?.length === 0}
+          isEmpty={response?.data.length === 0}
           onRetry={refetch}
         >
-          <AppTable 
-            data={albums || []} 
-            columns={columns} 
-            keyExtractor={(a) => a.albumId}
-            onDetailClick={handleOpenTracks} // Мобильный тап по карточке
-          />
+          <VStack align="stretch" gap={4}>
+            <AppTable 
+              data={response?.data || []} 
+              columns={columns} 
+              keyExtractor={(a) => a.albumId}
+              onDetailClick={handleOpenTracks}
+            />
+
+            {/* Reusable Pagination Component */}
+            {response?.meta && (
+              <AppPagination 
+                page={response.meta.page}
+                totalPages={response.meta.totalPages}
+                totalItems={response.meta.total}
+                onPageChange={handlePageChange}
+              />
+            )}
+          </VStack>
         </DataStateWrapper>
       </AppPanel>
 
-      {/* Модальное окно №4: Список треков альбома */}
       <AdaptiveDialog 
         isOpen={open} 
         onClose={onClose} 
@@ -94,8 +112,7 @@ export const AlbumsPage = () => {
 };
 
 /**
- * Вспомогательный компонент для загрузки треков альбома.
- * Вынесен отдельно для корректной работы хуков.
+ * Helper component for loading album tracks.
  */
 const AlbumTracksView = ({ albumId }: { albumId: number }) => {
   const { data, isLoading, isError, refetch } = useTracks("album", albumId);
