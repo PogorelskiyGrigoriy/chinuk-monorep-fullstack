@@ -1,49 +1,39 @@
 /**
  * @module CustomerQueries
- * Набор хуков TanStack Query для домена Клиентов.
- * Управляет кэшированием и жизненным циклом данных CRM.
+ * Хуки для работы с данными клиентов, инвойсов и их агентов.
  */
 import { useQuery } from "@tanstack/react-query";
 import { customerService } from "@/services/customer.implementation";
 import { type Pagination, type SortParams } from "@project/shared";
 
-/**
- * Хук для получения списка клиентов.
- * Автоматически перезапрашивает данные при изменении страницы или сортировки.
+/** * Список клиентов (ТЗ 1.1) 
  */
 export const useCustomers = (params: Pagination & SortParams) => {
   return useQuery({
     queryKey: ["customers", params],
     queryFn: () => customerService.getAll(params),
-    // Данные кэшируются на 5 минут, что идеально для стабильного списка клиентов
-    staleTime: 1000 * 60 * 5,
   });
 };
 
-/**
- * Хук для получения счетов конкретного клиента.
- * Используется в модальном окне/шторке Invoices.
+/** * Инвойсы конкретного клиента (ТЗ 1.1.1.2.1) - Окно №1 
  */
 export const useCustomerInvoices = (customerId: number | null) => {
   return useQuery({
-    queryKey: ["invoices", "customer", customerId],
-    // Запрос выполнится только если customerId не null
+    queryKey: ["customers", customerId, "invoices"],
     queryFn: () => customerService.getInvoices(customerId!),
     enabled: !!customerId,
-    // Счета могут обновляться часто, ставим время "свежести" поменьше
-    staleTime: 1000 * 60, 
   });
 };
 
-/**
- * Хук для получения данных ответственного менеджера.
- * Используется в карточке Sales Agent.
+/** * Данные менеджера клиента (ТЗ 1.1.1.2.2) - Окно №2 
+ * ИСПРАВЛЕНО: Теперь принимает customerId и использует правильный эндпоинт.
  */
 export const useCustomerAgent = (customerId: number | null) => {
   return useQuery({
-    queryKey: ["customer-agent", customerId],
+    queryKey: ["customers", customerId, "sales-agent"],
+    // Вызывает эндпоинт /api/customers/:id/sales-agent через твой сервис
     queryFn: () => customerService.getSalesAgent(customerId!),
     enabled: !!customerId,
-    staleTime: 1000 * 60 * 15, // Данные сотрудников меняются редко
+    staleTime: 1000 * 60 * 30, // Данные сотрудников меняются редко
   });
 };
