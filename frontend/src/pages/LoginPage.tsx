@@ -3,7 +3,7 @@
  * Шлюз аутентификации.
  */
 import { Container, Center } from "@chakra-ui/react";
-import { LoginForm } from "@/components/LoginForm";
+import { LoginForm } from "@/components/login/LoginForm";
 
 export const LoginPage = () => {
   return (
