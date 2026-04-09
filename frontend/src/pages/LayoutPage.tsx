@@ -5,7 +5,7 @@
  */
 import { Box, Flex } from "@chakra-ui/react";
 import { Outlet } from "react-router-dom";
-import { Navbar } from "@/components/Navbar"; // Убедись, что регистр папки совпадает
+import { Navbar } from "@/components/navbar/NavBar";
 
 export const LayoutPage = () => {
   return (
@@ -39,5 +39,3 @@ export const LayoutPage = () => {
     </Flex>
   );
 };
-
-export default MainLayout;

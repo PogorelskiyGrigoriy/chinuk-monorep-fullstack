@@ -18,6 +18,14 @@ import { AlbumsPage } from "@/pages/AlbumsPage";
 import { PlaylistsPage } from "@/pages/PlaylistsPage";
 import { AuditPage } from "@/pages/AuditPage";
 import { ErrorPage } from "@/pages/ErrorPage";
+import { useAuthStore } from "@/store/auth-store";
+
+const RootRedirect = () => {
+  const user = useAuthStore((state) => state.user);
+
+  if (user?.role === "SALE") return <Navigate to={ROUTES.CUSTOMERS} replace />;
+  return <Navigate to={ROUTES.ALBUMS} replace />;
+};
 
 export const appRouter = createBrowserRouter([
   {
@@ -25,11 +33,11 @@ export const appRouter = createBrowserRouter([
     errorElement: <ErrorPage />,
     children: [
       // --- Публичные маршруты ---
-      { 
-        path: ROUTES.LOGIN, 
-        element: <LoginPage /> 
+      {
+        path: ROUTES.LOGIN,
+        element: <LoginPage />
       },
-      
+
       // --- Защищенные маршруты (Требуется логин) ---
       {
         path: "/",
@@ -40,50 +48,50 @@ export const appRouter = createBrowserRouter([
         ),
         children: [
           // Редирект с корня на подходящую страницу по умолчанию
-          { 
-            index: true, 
-            element: <Navigate to={ROUTES.ALBUMS} replace /> 
+          {            
+            index: true,
+            element: <RootRedirect />
           },
 
-          // Сектор CRM (Доступ: SALE, SUPER_USER)
-          { 
-            path: ROUTES.CUSTOMERS, 
-            element: (
-              <ProtectedRoute allowedRoles={["SALE", "SUPER_USER"]}>
-                <CustomersPage />
-              </ProtectedRoute>
-            ) 
-          },
+      // Сектор CRM (Доступ: SALE, SUPER_USER)
+      {
+        path: ROUTES.CUSTOMERS,
+        element: (
+          <ProtectedRoute allowedRoles={["SALE", "SUPER_USER"]}>
+            <CustomersPage />
+          </ProtectedRoute>
+        )
+      },
 
-          // Музыкальный сектор (Доступ: USER, SUPER_USER)
-          { 
-            path: ROUTES.ALBUMS, 
-            element: (
-              <ProtectedRoute allowedRoles={["USER", "SUPER_USER"]}>
-                <AlbumsPage />
-              </ProtectedRoute>
-            ) 
-          },
-          { 
-            path: ROUTES.PLAYLISTS, 
-            element: (
-              <ProtectedRoute allowedRoles={["USER", "SUPER_USER"]}>
-                <PlaylistsPage />
-              </ProtectedRoute>
-            ) 
-          },
+      // Музыкальный сектор (Доступ: USER, SUPER_USER)
+      {
+        path: ROUTES.ALBUMS,
+        element: (
+          <ProtectedRoute allowedRoles={["USER", "SUPER_USER"]}>
+            <AlbumsPage />
+          </ProtectedRoute>
+        )
+      },
+      {
+        path: ROUTES.PLAYLISTS,
+        element: (
+          <ProtectedRoute allowedRoles={["USER", "SUPER_USER"]}>
+            <PlaylistsPage />
+          </ProtectedRoute>
+        )
+      },
 
-          // Сектор администрирования (Доступ: Только SUPER_USER)
-          { 
-            path: ROUTES.AUDIT, 
-            element: (
-              <ProtectedRoute allowedRoles={["SUPER_USER"]}>
-                <AuditPage />
-              </ProtectedRoute>
-            ) 
-          },
-        ],
+      // Сектор администрирования (Доступ: Только SUPER_USER)
+      {
+        path: ROUTES.AUDIT,
+        element: (
+          <ProtectedRoute allowedRoles={["SUPER_USER"]}>
+            <AuditPage />
+          </ProtectedRoute>
+        )
       },
     ],
+  },
+],
   },
 ]);
