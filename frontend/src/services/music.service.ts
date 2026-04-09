@@ -1,16 +1,18 @@
 /**
  * @module MusicService
- * Интерфейс для работы с музыкальным каталогом (Альбомы, Плейлисты, Треки).
+ * Интерфейс для работы с музыкальным каталогом.
  */
 import { 
   type AlbumWithArtist, 
   type TrackDetail, 
-  type Playlist 
+  type Playlist,
+  type Pagination,
+  type SortParams 
 } from "@project/shared";
 
 export interface MusicService {
-  /** Получить все альбомы с именами артистов (ТЗ 1.2) */
-  getAlbums(): Promise<AlbumWithArtist[]>;
+  /** Получить все альбомы с поддержкой пагинации (ТЗ 1.2) */
+  getAlbums(params?: Pagination & SortParams): Promise<AlbumWithArtist[]>;
   
   /** Получить треки конкретного альбома (ТЗ 1.2.1.3) */
   getAlbumTracks(albumId: number): Promise<TrackDetail[]>;

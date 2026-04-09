@@ -1,6 +1,5 @@
 /**
  * @module MusicServiceRest
- * Реализация музыкального сервиса для Chinook Explorer.
  */
 import { api } from "@/api/axios-instance";
 import { API_ENDPOINTS } from "@/api/endpoints";
@@ -10,14 +9,16 @@ import {
   PlaylistSchema,
   type AlbumWithArtist, 
   type TrackDetail, 
-  type Playlist 
+  type Playlist,
+  type Pagination,
+  type SortParams
 } from "@project/shared";
 import type { MusicService } from "./music.service";
 
 class MusicServiceRest implements MusicService {
   
-  async getAlbums(): Promise<AlbumWithArtist[]> {
-    const { data } = await api.get<AlbumWithArtist[]>(API_ENDPOINTS.MUSIC.ALBUMS);
+  async getAlbums(params?: Pagination & SortParams): Promise<AlbumWithArtist[]> {
+    const { data } = await api.get<AlbumWithArtist[]>(API_ENDPOINTS.MUSIC.ALBUMS, { params });
     return data.map(item => AlbumWithArtistSchema.parse(item));
   }
 

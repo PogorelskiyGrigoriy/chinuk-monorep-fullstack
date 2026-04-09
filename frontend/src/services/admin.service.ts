@@ -1,12 +1,11 @@
 /**
  * @module AdminService
- * Интерфейс для административных операций и аудита системы.
  */
-import { type AuditLog } from "@project/shared";
+import { type AuditLog, type Pagination } from "@project/shared";
 
 export interface AdminService {
   /** * Получить историю системных событий (Accounting layer).
-   * Доступно только для роли SUPER_USER.
+   * Теперь контракт разрешает передачу параметров пагинации.
    */
-  getLogs(): Promise<AuditLog[]>;
+  getLogs(params?: Pagination): Promise<AuditLog[]>; // Добавлен необязательный параметр
 }

@@ -10,7 +10,7 @@ import {
 import { LuUser, LuLogOut, LuChevronDown } from "react-icons/lu";
 
 import { useAuthStore } from "@/store/auth-store";
-import { useLogout } from "@/services/hooks/use-logout";
+import { useLogout } from "@/services/hooks/auth/use-logout";
 
 export const UserMenu = () => {
   // 1. Получаем данные пользователя из стора для отображения в шапке и меню

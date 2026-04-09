@@ -4,16 +4,15 @@
  */
 import { api } from "@/api/axios-instance";
 import { API_ENDPOINTS } from "@/api/endpoints";
-import { auditLogSchema, type AuditLog } from "@project/shared";
+import { auditLogSchema, type AuditLog, type Pagination } from "@project/shared";
 import type { AdminService } from "./admin.service";
 
 class AdminServiceRest implements AdminService {
-  
-  async getLogs(): Promise<AuditLog[]> {
-    const { data } = await api.get<AuditLog[]>(API_ENDPOINTS.ADMIN.LOGS);
+  // Добавляем params в сигнатуру
+  async getLogs(params?: Pagination): Promise<AuditLog[]> {
+    // Передаем параметры пагинации в axios
+    const { data } = await api.get<AuditLog[]>(API_ENDPOINTS.ADMIN.LOGS, { params });
     
-    // Валидируем массив логов. 
-    // Поскольку это аудит безопасности, важно убедиться в корректности данных.
     return data.map(log => auditLogSchema.parse(log));
   }
 }

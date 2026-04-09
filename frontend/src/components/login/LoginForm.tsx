@@ -15,7 +15,7 @@ import { LuLogIn } from "react-icons/lu";
 import { Field } from "../chakra-ui/field";
 import { AppPanel } from "@/components/shared/atoms/AppPanel";
 import { LoginDemoHints } from "./LoginDemoHints";
-import { useLogin } from "@/services/hooks/use-login";
+import { useLogin } from "@/services/hooks/auth/use-login";
 import { loginSchema, type LoginData } from "@project/shared";
 import { getErrorData } from "@/utils/error-helpers";
 

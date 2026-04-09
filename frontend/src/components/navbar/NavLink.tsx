@@ -1,6 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import { Button, Text, Icon } from "@chakra-ui/react";
-import { RBACGuard } from "../shared/moleculas/RBACGuard"; // Оставил твой путь
+import { RBACGuard } from "../shared/organisms/RBACGuard"; // Оставил твой путь
 import { type UserRole } from "@project/shared";
 
 interface NavLinkProps {
