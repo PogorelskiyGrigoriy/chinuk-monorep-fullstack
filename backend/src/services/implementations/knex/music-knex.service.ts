@@ -10,29 +10,56 @@ import {
   PlaylistSchema,
   type AlbumWithArtist, 
   type TrackDetail, 
-  type Playlist 
+  type Playlist,
+  type Pagination, 
+  type PaginatedResponse
 } from '@project/shared';
 import { MusicService } from '../../entities.service.js';
 import logger from '../../../utils/pino-logger.js';
 
 export class MusicKnexService implements MusicService {
   
-  /**
-   * Retrieves all albums with their respective artist names.
-   */
-  async getAlbums(): Promise<AlbumWithArtist[]> {
+  async getAlbums(params: Pagination): Promise<PaginatedResponse<AlbumWithArtist>> {
+    const { page, limit } = params;
+    const offset = (page - 1) * limit;
+
     const rows = await db('album')
       .join('artist', 'album.artist_id', 'artist.artist_id')
-      .select('album.*', 'artist.name as artistName');
-    
-    return rows.map(row => {
+      .select('album.*', 'artist.name as artistName')
+      .limit(limit)
+      .offset(offset)
+      .orderBy('album_id', 'asc');
+
+    const countRes = await db('album').count('album_id as total').first();
+    const total = Number(countRes?.total || 0);
+
+    const data = rows.map(row => {
       const res = AlbumWithArtistSchema.safeParse(row);
-      if (!res.success) {
-        logger.warn({ id: row.albumId }, 'Album data validation failed');
-        return row as AlbumWithArtist;
-      }
-      return res.data;
+      return res.success ? res.data : (row as AlbumWithArtist);
     });
+
+    return { data, meta: { total, page, limit, totalPages: Math.ceil(total / limit) } };
+  }
+
+  async getPlaylists(params: Pagination): Promise<PaginatedResponse<Playlist>> {
+    const { page, limit } = params;
+    const offset = (page - 1) * limit;
+
+    const rows = await db('playlist')
+      .select('*')
+      .limit(limit)
+      .offset(offset)
+      .orderBy('playlist_id', 'asc');
+
+    const countRes = await db('playlist').count('playlist_id as total').first();
+    const total = Number(countRes?.total || 0);
+
+    const data = rows.map(row => {
+      const res = PlaylistSchema.safeParse(row);
+      return res.success ? res.data : (row as Playlist);
+    });
+
+    return { data, meta: { total, page, limit, totalPages: Math.ceil(total / limit) } };
   }
 
   /**
@@ -41,17 +68,6 @@ export class MusicKnexService implements MusicService {
   async getAlbumTracks(albumId: number): Promise<TrackDetail[]> {
     const rows = await this.getBaseTrackQuery().where('track.album_id', albumId);
     return rows.map(row => this.safeParseTrack(row));
-  }
-
-  /**
-   * Retrieves all available playlists.
-   */
-  async getPlaylists(): Promise<Playlist[]> {
-    const rows = await db('playlist').select('*');
-    return rows.map(row => {
-      const res = PlaylistSchema.safeParse(row);
-      return res.success ? res.data : (row as Playlist);
-    });
   }
 
   /**

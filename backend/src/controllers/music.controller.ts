@@ -4,17 +4,19 @@
  */
 import type { Request, Response, NextFunction } from 'express';
 import { type MusicService } from '../services/entities.service.js';
+import { paginationSchema } from '@project/shared';
 
 export class MusicController {
   constructor(private musicService: MusicService) {}
 
   /**
-   * GET /api/albums - Returns all albums.
+   * GET /api/albums - Returns paginated albums.
    */
-  getAlbums = async (_req: Request, res: Response, next: NextFunction) => {
+  getAlbums = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const albums = await this.musicService.getAlbums();
-      res.json(albums);
+      const params = paginationSchema.parse(req.query);
+      const result = await this.musicService.getAlbums(params);
+      res.json(result);
     } catch (e) {
       next(e);
     }
@@ -34,12 +36,13 @@ export class MusicController {
   };
 
   /**
-   * GET /api/playlists - Returns all playlists.
+   * GET /api/playlists - Returns paginated playlists.
    */
-  getPlaylists = async (_req: Request, res: Response, next: NextFunction) => {
+  getPlaylists = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const playlists = await this.musicService.getPlaylists();
-      res.json(playlists);
+      const params = paginationSchema.parse(req.query);
+      const result = await this.musicService.getPlaylists(params);
+      res.json(result);
     } catch (e) {
       next(e);
     }
