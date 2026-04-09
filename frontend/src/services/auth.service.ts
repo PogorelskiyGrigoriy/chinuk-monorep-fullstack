@@ -1,16 +1,10 @@
-/**
- * @module AuthService
- * Описание интерфейса для работы с аутентификацией на фронтенде.
- */
-import { type User, type LoginData } from "@project/shared";
+import { type LoginData, type AuthResponse, type User } from "@project/shared";
 
 export interface AuthService {
-  /** Авторизация пользователя */
-  login(credentials: LoginData): Promise<{ user: User; token: string }>;
+  // Используем AuthResponse вместо ручного описания объекта
+  login(credentials: LoginData): Promise<AuthResponse>;
   
-  /** Выход из системы */
   logout(): Promise<void>;
   
-  /** Получение данных текущей сессии (для AppInitializer) */
   getCurrentUser(): Promise<User | null>;
 }

@@ -33,12 +33,7 @@ class CustomerServiceRest implements CustomerService {
   }
 
   async getSalesAgent(customerId: number): Promise<Employee> {
-    /**
-     * В API_ENDPOINTS мы прописывали EMPLOYEES.BY_ID, 
-     * но бэкенд-сервис предполагает получение агента через customerId.
-     * Если эндпоинт на бэкенде выглядит как /customers/:id/agent:
-     */
-    const { data } = await api.get<Employee>(`${API_ENDPOINTS.CUSTOMERS.BY_ID(customerId)}/agent`);
+    const { data } = await api.get<Employee>(API_ENDPOINTS.CUSTOMERS.SALES_AGENT(customerId));
     return EmployeeSchema.parse(data);
   }
 }

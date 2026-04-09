@@ -55,7 +55,7 @@ app.use('/api/auth/login', loginLimiter);
 app.use('/api/auth', authRoutes);      // Auth & Session
 app.use('/api/admin', auditRoutes);    // Administration & Logs
 app.use('/api/customers', customerRoutes); // CRM & Invoices
-app.use('/api', musicRoutes);          // Music Catalog (internal prefixes applied)
+app.use('/api/music', musicRoutes);          // Music Catalog (internal prefixes applied)
 
 // --- 3. Error Handling ---
 
