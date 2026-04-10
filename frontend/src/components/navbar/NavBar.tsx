@@ -1,4 +1,9 @@
-import { Container, Flex, HStack, Box } from "@chakra-ui/react";
+/**
+ * @module Navbar
+ * Main application header.
+ * Synchronizes navigation links and user session controls.
+ */
+import { Container, HStack, Box } from "@chakra-ui/react";
 import { MAIN_NAV_LINKS, ADMIN_NAV_LINKS } from "@/config/navigation";
 import { NavLink } from "./NavLink";
 import { UserMenu } from "./UserMenu";
@@ -11,15 +16,16 @@ export const Navbar = () => {
       borderBottomWidth="1px" 
       borderColor="border.subtle" 
       position="sticky" 
-      top={0} 
+      top="0" 
       zIndex="sticky"
+      w="full"
     >
-      <Container maxW="container.xl">
-        <Flex h="16" align="center" justify="space-between">
+      <Container maxW="container.xl" px={{ base: "4", md: "8" }}>
+        {/* flex justify="space-between" keeps nav left and user profile right */}
+        <HStack justify="space-between" h="16" align="center">
           
-          {/* СЛЕВА: Основные ссылки */}
+          {/* Main Navigation Section */}
           <HStack gap={{ base: 2, md: 4 }}>
-            {/* Рендерим все ссылки из конфига */}
             {[...MAIN_NAV_LINKS, ...ADMIN_NAV_LINKS].map((link) => (
               <NavLink 
                 key={link.to} 
@@ -31,10 +37,10 @@ export const Navbar = () => {
             ))}
           </HStack>
 
-          {/* СПРАВА: Профиль */}
+          {/* User Profile Section */}
           <UserMenu />
 
-        </Flex>
+        </HStack>
       </Container>
     </Box>
   );

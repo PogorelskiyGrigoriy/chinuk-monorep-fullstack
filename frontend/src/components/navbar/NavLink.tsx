@@ -1,6 +1,11 @@
+/**
+ * @module NavLink
+ * Navigation link component with Active State and RBAC protection.
+ * Responsive design: Hides labels on mobile devices.
+ */
 import { Link, useLocation } from "react-router-dom";
 import { Button, Text, Icon } from "@chakra-ui/react";
-import { RBACGuard } from "../shared/organisms/RBACGuard"; // Оставил твой путь
+import { RBACGuard } from "../shared/organisms/RBACGuard";
 import { type UserRole } from "@project/shared";
 
 interface NavLinkProps {
@@ -16,12 +21,10 @@ export const NavLink = ({ to, label, icon: IconComponent, roles }: NavLinkProps)
 
   return (
     <RBACGuard allowedRoles={roles}>
-      {/* Добавляем asChild. 
-        Теперь Button работает как "обертка стилей", а реальным элементом будет Link.
-      */}
       <Button
         asChild
         variant="ghost"
+        // Semantic coloring based on active route
         bg={isActive ? "brand.500/10" : "transparent"}
         color={isActive ? "brand.500" : "fg.muted"}
         _hover={{ bg: "bg.muted", color: "fg.default" }}
@@ -29,11 +32,9 @@ export const NavLink = ({ to, label, icon: IconComponent, roles }: NavLinkProps)
         px={{ base: 2, md: 4 }}
       >
         <Link to={to}>
-          <Icon size="md">
-            <IconComponent />
-          </Icon>
-          {/* Текст скрывается на мобильных устройствах */}
-          <Text display={{ base: "none", md: "inline" }} fontWeight="semibold">
+          <Icon as={IconComponent} boxSize="4" />
+          {/* Label automatically hides on mobile viewports */}
+          <Text hideBelow="md" fontWeight="semibold">
             {label}
           </Text>
         </Link>

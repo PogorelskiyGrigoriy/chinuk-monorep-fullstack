@@ -11,7 +11,7 @@ export const MOCK_USERS: UserWithPassword[] = [
     // Corresponds to Andrew Adams in the original DB
     employeeId: 1,
     email: "admin@chinook.com",
-    firstName: "Grigory",
+    firstName: "John",
     lastName: "Admin",
     role: "SUPER_USER",
     // Bcrypt hash ($2b$ variant) for 'password123'
